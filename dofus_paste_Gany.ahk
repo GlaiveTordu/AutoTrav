@@ -392,12 +392,13 @@ ForcerVerification(*) {
                         batPath := A_Temp "\atd_updater.bat"
                         currentExe := A_ScriptFullPath
                         batContent := "@echo off`r`n"
+                            . "chcp 65001 >nul`r`n"
                             . "timeout /t 2 /nobreak >nul`r`n"
                             . "copy /y `"" newExe "`" `"" currentExe "`" >nul`r`n"
                             . "del `"" newExe "`"`r`n"
                             . "start `"`" `"" currentExe "`"`r`n"
                             . "del `"%~0`"`r`n"
-                        FileOpen(batPath, "w").Write(batContent)
+                        FileOpen(batPath, "w", "UTF-8-RAW").Write(batContent)
                         Run(batPath,, "Hide")
                         ExitApp
                     } catch as e {
