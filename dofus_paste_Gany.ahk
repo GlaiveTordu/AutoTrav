@@ -3,6 +3,12 @@
 SendMode "Input"
 SetTitleMatchMode 2
 
+;@Ahk2Exe-AddResource cycle.png
+;@Ahk2Exe-AddResource invite.png
+;@Ahk2Exe-AddResource trade.png
+;@Ahk2Exe-AddResource pause.png
+;@Ahk2Exe-AddResource play.png
+
 ; ==================== CONFIGURATION ====================
 VersionActuelle := "0.0.8"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
@@ -10,6 +16,10 @@ LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/vers
 LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTravelerDofus%20%5BATD%5D.exe"
 ConfigFile := A_ScriptDir "\config_swapper.ini"
 ; =======================================================
+
+GetIconPath(name) {
+    return A_IsCompiled ? "*iRES:" name : name
+}
 
 TargetCharacter := ""
 lastClip := ""
@@ -25,6 +35,7 @@ BtnMoveDown := ""
 TravelAllCheckbox := ""
 BtnInviteGroup := ""
 BtnTradeGroup := ""
+ImgPause := ""
 
 ; Chargement des configurations
 if FileExist(ConfigFile) {
@@ -69,7 +80,8 @@ ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
 ControlGui.Add("Text", "x15 y95 w250 h20 +BackgroundTrans", "Instances Dofus détectées")
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-BtnSetCycle := ControlGui.Add("Text", "x255 y91 w135 h24 Center +0x0200 Background2D2A26 +Border vBtnSetCycle", "⚙ Cycle : " CycleHotkey)
+ControlGui.Add("Picture", "x261 y95 w16 h16 +Disabled", GetIconPath("cycle.png"))
+BtnSetCycle := ControlGui.Add("Text", "x255 y91 w135 h24 Left +0x0200 Background2D2A26 +Border vBtnSetCycle", "      Cycle : " CycleHotkey)
 
 ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
 AccountList := ControlGui.Add("ListView", "x15 y125 w375 h290 -Hdr -Multi Background1E1C1A cWhite -LV0x10 vAccountList", ["Perso", "Raccourci"])
@@ -88,8 +100,10 @@ ControlGui.Add("Text", "x450 y111 w250 h15 +BackgroundTrans", "Sélectionner le 
 ChoicePerso := ControlGui.Add("DDL", "x450 y130 w255 Background1E1C1A vChoicePerso", ["Aucun compte"])
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-BtnInviteGroup := ControlGui.Add("Text", "x450 y162 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnInviteGroup", "👥 Inviter Groupe")
-BtnTradeGroup := ControlGui.Add("Text", "x585 y162 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnTradeGroup", "🤝 Échange Général")
+ControlGui.Add("Picture", "x456 y166 w16 h16 +Disabled", GetIconPath("invite.png"))
+BtnInviteGroup := ControlGui.Add("Text", "x450 y162 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnInviteGroup", "      Inviter Groupe")
+ControlGui.Add("Picture", "x591 y166 w16 h16 +Disabled", GetIconPath("trade.png"))
+BtnTradeGroup := ControlGui.Add("Text", "x585 y162 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnTradeGroup", "      Échange Général")
 
 ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
 TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y199 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
@@ -115,7 +129,8 @@ ControlGui.SetFont("s8.5 c55FF55 Bold", "Segoe UI")
 StatusText := ControlGui.Add("Text", "x285 y442 w90 h18 Left +BackgroundTrans vStatusText", "Active")
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-BtnPauseToggle := ControlGui.Add("Text", "x380 y437 w100 h24 Center +0x0200 Background2D2A26 +Border vBtnPauseToggle", "⏸ Pause")
+ImgPause := ControlGui.Add("Picture", "x386 y441 w16 h16 +Disabled", GetIconPath("pause.png"))
+BtnPauseToggle := ControlGui.Add("Text", "x380 y437 w100 h24 Left +0x0200 Background2D2A26 +Border vBtnPauseToggle", "      Pause")
 
 ControlGui.SetFont("s7 cFF3333 Italic Norm", "Segoe UI")
 ControlGui.Add("Text", "x610 y442 w60 h18 Right +BackgroundTrans", "keyzome ♥")
@@ -183,7 +198,7 @@ ModifierCycleHotkey(*) {
         try Hotkey(CycleHotkey, "Off")
         CycleHotkey := IB.Value
         IniWrite(CycleHotkey, ConfigFile, "Config", "CycleHotkey")
-        BtnSetCycle.Text := "⚙ Cycle : " CycleHotkey
+        BtnSetCycle.Text := "      Cycle : " CycleHotkey
         try Hotkey(CycleHotkey, CycleFenetresDofus, "On")
         LogMessage("Touche de cycle modifiée : " CycleHotkey)
     }
@@ -462,20 +477,22 @@ TogglePause(*) {
 }
 
 ActiverPause(*) {
-    global IsPaused, StatusText, BtnPauseToggle
+    global IsPaused, StatusText, BtnPauseToggle, ImgPause
     IsPaused := true
     StatusText.SetFont("cFF5555") 
     StatusText.Text := "En pause"
-    BtnPauseToggle.Text := "▶ Activer"
+    BtnPauseToggle.Text := "      Activer"
+    ImgPause.Value := GetIconPath("play.png")
     LogMessage("Surveillance du presse-papier mise en pause.")
 }
 
 DesactiverPause(*) {
-    global IsPaused, StatusText, BtnPauseToggle
+    global IsPaused, StatusText, BtnPauseToggle, ImgPause
     IsPaused := false
     StatusText.SetFont("c55FF55") 
     StatusText.Text := "Active"
-    BtnPauseToggle.Text := "⏸ Pause"
+    BtnPauseToggle.Text := "      Pause"
+    ImgPause.Value := GetIconPath("pause.png")
     LogMessage("Surveillance du presse-papier réactivée.")
 }
 
