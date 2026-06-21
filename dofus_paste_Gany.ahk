@@ -4,12 +4,15 @@ SendMode "Input"
 SetTitleMatchMode 2
 
 ; ==================== CONFIGURATION ====================
-VersionActuelle := "0.0.8"
+VersionActuelle := "0.0.9"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
 LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/version.txt"
 LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTravelerDofus%20%5BATD%5D.exe"
 ConfigFile := A_ScriptDir "\config_swapper.ini"
 ; =======================================================
+
+SetMenuTheme("ForceDark")
+
 
 GetIconPath(name) {
     return A_ScriptDir "\" name
@@ -56,11 +59,13 @@ TrayTip "AutoTravelerDofus [ATD]", "Interface stable activée ! 🚀", 1
 ControlGui := Gui("+AlwaysOnTop -MaximizeBox +ToolWindow +E0x02000000 +E0x00080000")
 ControlGui.BackColor := "1B1917"
 ControlGui.Title := "AutoTravelerDofus [ATD] - Dofus 3 Unity Multi-Account Helper"
+MettreTitreFonce(ControlGui.Hwnd)
 
 ; --- Barre de Menu ---
 MyMenuBar := MenuBar()
 AccueilMenu := Menu()
 AccueilMenu.Add("Info", AfficherInfo)
+AccueilMenu.Add("Forcer la mise à jour", ForcerVerification)
 MyMenuBar.Add("Acceuil", AccueilMenu)
 ControlGui.MenuBar := MyMenuBar
 
@@ -708,6 +713,7 @@ AfficherInfo(*) {
     InfoGui := Gui("+AlwaysOnTop -MaximizeBox -MinimizeBox +ToolWindow +Owner" ControlGui.Hwnd)
     InfoGui.BackColor := "1B1917"
     InfoGui.Title := "À propos"
+    MettreTitreFonce(InfoGui.Hwnd)
     
     InfoGui.SetFont("s11 cE5C180 Bold", "Segoe UI")
     InfoGui.Add("Text", "x20 y20 w260 h22 Center", "AutoTravelerDofus [ATD]")
@@ -724,6 +730,28 @@ AfficherInfo(*) {
     BtnClose.OnEvent("Click", (*) => InfoGui.Destroy())
     
     InfoGui.Show("w300 h200")
+}
+
+MettreTitreFonce(hwnd) {
+    if (VerCompare(A_OSVersion, "10.0.17763") >= 0) {
+        attr := (VerCompare(A_OSVersion, "10.0.18985") >= 0) ? 20 : 19
+        DllCall("dwmapi\DwmSetWindowAttribute", "ptr", hwnd, "int", attr, "int*", true, "int", 4)
+    }
+}
+
+SetMenuTheme(appMode := "ForceDark") {
+    static preferredAppMode := {Default: 0, AllowDark: 1, ForceDark: 2, ForceLight: 3, Max: 4}
+    if (preferredAppMode.HasProp(appMode))
+        appMode := preferredAppMode.%appMode%
+    hModule := DllCall("kernel32.dll\LoadLibrary", "str", "uxtheme.dll", "ptr")
+    if (!hModule)
+        return
+    fnSetPreferredAppMode := DllCall("kernel32.dll\GetProcAddress", "ptr", hModule, "ptr", 135, "ptr")
+    fnFlushMenuThemes := DllCall("kernel32.dll\GetProcAddress", "ptr", hModule, "ptr", 136, "ptr")
+    if (fnSetPreferredAppMode && fnFlushMenuThemes) {
+        DllCall(fnSetPreferredAppMode, "int", appMode)
+        DllCall(fnFlushMenuThemes)
+    }
 }
 
 RecreerIcones() {
