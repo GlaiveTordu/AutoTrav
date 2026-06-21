@@ -57,6 +57,14 @@ ControlGui := Gui("+AlwaysOnTop -MaximizeBox +ToolWindow +E0x02000000 +E0x000800
 ControlGui.BackColor := "1B1917"
 ControlGui.Title := "AutoTravelerDofus [ATD] - Dofus 3 Unity Multi-Account Helper"
 
+; --- Barre de Menu ---
+MyMenuBar := MenuBar()
+AccueilMenu := Menu()
+AccueilMenu.Add("Info", AfficherInfo)
+MyMenuBar.Add("Acceuil", AccueilMenu)
+ControlGui.MenuBar := MyMenuBar
+
+
 ; --- En-tête (Header) ---
 ControlGui.SetFont("s18 cE5C180 Bold", "Segoe UI")
 ControlGui.Add("Text", "x15 y15 w400 h30 +BackgroundTrans", "AutoTravelerDofus [ATD]")
@@ -693,6 +701,29 @@ WriteHexToFile(hex, filepath) {
     file := FileOpen(filepath, "w")
     file.RawWrite(buf)
     file.Close()
+}
+
+AfficherInfo(*) {
+    global VersionActuelle, ControlGui
+    InfoGui := Gui("+AlwaysOnTop -MaximizeBox -MinimizeBox +ToolWindow +Owner" ControlGui.Hwnd)
+    InfoGui.BackColor := "1B1917"
+    InfoGui.Title := "À propos"
+    
+    InfoGui.SetFont("s11 cE5C180 Bold", "Segoe UI")
+    InfoGui.Add("Text", "x20 y20 w260 h22 Center", "AutoTravelerDofus [ATD]")
+    
+    InfoGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
+    InfoGui.Add("Text", "x20 y52 w260 h18 Center", "Version : v" VersionActuelle)
+    InfoGui.Add("Text", "x20 y75 w260 h18 Center", "Créateur : Glaive Tordu")
+    
+    InfoGui.SetFont("s8 c8F8A85 Norm", "Segoe UI")
+    InfoGui.Add("Text", "x20 y105 w260 h36 Center", "Outil d'automatisation de trajet et de gestion multicompte Dofus 3 Unity.")
+    
+    InfoGui.SetFont("s9 c1B1917 Bold", "Segoe UI")
+    BtnClose := InfoGui.Add("Text", "x100 y155 w100 h26 Center +0x0200 BackgroundD4A34F +Border", "Fermer")
+    BtnClose.OnEvent("Click", (*) => InfoGui.Destroy())
+    
+    InfoGui.Show("w300 h200")
 }
 
 RecreerIcones() {
