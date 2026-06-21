@@ -4,7 +4,7 @@ SendMode "Input"
 SetTitleMatchMode 2
 
 ; ==================== CONFIGURATION ====================
-VersionActuelle := "0.0.7"
+VersionActuelle := "0.0.8"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
 LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/version.txt"
 LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTravelerDofus%20%5BATD%5D.exe"
@@ -51,8 +51,8 @@ ControlGui.BackColor := "1B1917"
 ControlGui.Title := "AutoTravelerDofus [ATD] - Dofus 3 Unity Multi-Account Helper"
 
 ; --- En-tête (Header) ---
-ControlGui.SetFont("s18 cD4A34F Bold", "Segoe UI")
-ControlGui.Add("Text", "x15 y15 w400 h30 +BackgroundTrans", "AUTOTRAVELERDOFUS [ATD]")
+ControlGui.SetFont("s18 cE5C180 Bold", "Segoe UI")
+ControlGui.Add("Text", "x15 y15 w400 h30 +BackgroundTrans", "AutoTravelerDofus [ATD]")
 
 ControlGui.SetFont("s8.5 c8F8A85 Norm", "Segoe UI")
 ControlGui.Add("Text", "x15 y45 w450 h15 +BackgroundTrans", "Outil de voyage et de gestion multicompte Dofus 3 Unity")
@@ -69,7 +69,7 @@ ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
 ControlGui.Add("Text", "x15 y95 w250 h20 +BackgroundTrans", "Instances Dofus détectées")
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-BtnSetCycle := ControlGui.Add("Text", "x295 y91 w135 h24 Center +0x0200 Background2D2A26 +Border vBtnSetCycle", "⚙ Cycle : " CycleHotkey)
+BtnSetCycle := ControlGui.Add("Text", "x255 y91 w135 h24 Center +0x0200 Background2D2A26 +Border vBtnSetCycle", "⚙ Cycle : " CycleHotkey)
 
 ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
 AccountList := ControlGui.Add("ListView", "x15 y125 w375 h290 -Hdr -Multi Background1E1C1A cWhite -LV0x10 vAccountList", ["Perso", "Raccourci"])
@@ -87,21 +87,24 @@ ControlGui.Add("Text", "x450 y123 w250 h15 +BackgroundTrans", "Sélectionner le 
 
 ChoicePerso := ControlGui.Add("DDL", "x450 y143 w255 Background1E1C1A vChoicePerso", ["Aucun compte"])
 
-ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
-TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y175 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
-TravelAllCheckbox.Value := TravelAll
-
-ShowLogCheckbox := ControlGui.Add("Checkbox", "x450 y198 w250 h18 Checked", "Afficher le journal d'activité")
-
-ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
-LogTitle := ControlGui.Add("Text", "x450 y223 w250 h18 vLogTitle +BackgroundTrans", "Journal d'activité")
-
-ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
-LogEdit := ControlGui.Add("Edit", "x450 y245 w255 h138 ReadOnly Multi Background1E1C1A vLogEdit")
+ControlGui.SetFont("s8.5 c8F8A85 Norm", "Segoe UI")
+GroupFrame := ControlGui.Add("GroupBox", "x440 y172 w275 h55", "Actions de Groupe")
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-BtnInviteGroup := ControlGui.Add("Text", "x450 y389 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnInviteGroup", "👥 Inviter Groupe")
-BtnTradeGroup := ControlGui.Add("Text", "x585 y389 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnTradeGroup", "🤝 Échange Général")
+BtnInviteGroup := ControlGui.Add("Text", "x450 y191 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnInviteGroup", "👥 Inviter Groupe")
+BtnTradeGroup := ControlGui.Add("Text", "x585 y191 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnTradeGroup", "🤝 Échange Général")
+
+ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
+TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y237 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
+TravelAllCheckbox.Value := TravelAll
+
+ShowLogCheckbox := ControlGui.Add("Checkbox", "x450 y257 w250 h18 Checked", "Afficher le journal d'activité")
+
+ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
+LogTitle := ControlGui.Add("Text", "x450 y281 w250 h18 vLogTitle +BackgroundTrans", "Journal d'activité")
+
+ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
+LogEdit := ControlGui.Add("Edit", "x450 y301 w255 h115 ReadOnly Multi Background1E1C1A vLogEdit")
 
 ; --- Barre de Statut (Bas) ---
 ControlGui.Add("Text", "x15 y430 w690 h1 +Background33302D")
