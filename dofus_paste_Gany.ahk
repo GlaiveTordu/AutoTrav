@@ -76,8 +76,8 @@ ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
 ControlGui.Add("Text", "x15 y95 w250 h20 +BackgroundTrans", "Instances Dofus détectées")
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-ControlGui.Add("Picture", "x261 y95 w16 h16 +Disabled +BackgroundTrans", GetIconPath("cycle.png"))
-BtnSetCycle := ControlGui.Add("Text", "x255 y91 w135 h24 Left +0x0200 Background2D2A26 +Border vBtnSetCycle", "      Cycle : " CycleHotkey)
+ControlGui.Add("Picture", "x260 y94 w18 h18 +Disabled +BackgroundTrans", GetIconPath("cycle.png"))
+BtnSetCycle := ControlGui.Add("Text", "x255 y91 w135 h24 Left +0x0200 Background2D2A26 +Border vBtnSetCycle", "       Cycle : " CycleHotkey)
 
 ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
 AccountList := ControlGui.Add("ListView", "x15 y125 w375 h290 -Hdr -Multi Background1E1C1A cWhite -LV0x10 vAccountList", ["Perso", "Raccourci"])
@@ -96,10 +96,10 @@ ControlGui.Add("Text", "x450 y111 w250 h15 +BackgroundTrans", "Sélectionner le 
 ChoicePerso := ControlGui.Add("DDL", "x450 y130 w255 Background1E1C1A vChoicePerso", ["Aucun compte"])
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-ControlGui.Add("Picture", "x456 y166 w16 h16 +Disabled +BackgroundTrans", GetIconPath("invite.png"))
-BtnInviteGroup := ControlGui.Add("Text", "x450 y162 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnInviteGroup", "      Inviter Groupe")
-ControlGui.Add("Picture", "x591 y166 w16 h16 +Disabled +BackgroundTrans", GetIconPath("trade.png"))
-BtnTradeGroup := ControlGui.Add("Text", "x585 y162 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnTradeGroup", "      Échange Général")
+ControlGui.Add("Picture", "x455 y165 w18 h18 +Disabled +BackgroundTrans", GetIconPath("invite.png"))
+BtnInviteGroup := ControlGui.Add("Text", "x450 y162 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnInviteGroup", "       Inviter Groupe")
+ControlGui.Add("Picture", "x590 y165 w18 h18 +Disabled +BackgroundTrans", GetIconPath("trade.png"))
+BtnTradeGroup := ControlGui.Add("Text", "x585 y162 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnTradeGroup", "       Échange Général")
 
 ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
 TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y199 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
@@ -125,8 +125,8 @@ ControlGui.SetFont("s8.5 c55FF55 Bold", "Segoe UI")
 StatusText := ControlGui.Add("Text", "x285 y442 w90 h18 Left +BackgroundTrans vStatusText", "Active")
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-ImgPause := ControlGui.Add("Picture", "x386 y441 w16 h16 +Disabled +BackgroundTrans", GetIconPath("pause.png"))
-BtnPauseToggle := ControlGui.Add("Text", "x380 y437 w100 h24 Left +0x0200 Background2D2A26 +Border vBtnPauseToggle", "      Pause")
+ImgPause := ControlGui.Add("Picture", "x385 y440 w18 h18 +Disabled +BackgroundTrans", GetIconPath("pause.png"))
+BtnPauseToggle := ControlGui.Add("Text", "x380 y437 w100 h24 Left +0x0200 Background2D2A26 +Border vBtnPauseToggle", "       Pause")
 
 ControlGui.SetFont("s7 cFF3333 Italic Norm", "Segoe UI")
 ControlGui.Add("Text", "x610 y442 w60 h18 Right +BackgroundTrans", "keyzome ♥")
@@ -194,7 +194,7 @@ ModifierCycleHotkey(*) {
         try Hotkey(CycleHotkey, "Off")
         CycleHotkey := IB.Value
         IniWrite(CycleHotkey, ConfigFile, "Config", "CycleHotkey")
-        BtnSetCycle.Text := "      Cycle : " CycleHotkey
+        BtnSetCycle.Text := "       Cycle : " CycleHotkey
         try Hotkey(CycleHotkey, CycleFenetresDofus, "On")
         LogMessage("Touche de cycle modifiée : " CycleHotkey)
     }
@@ -477,7 +477,7 @@ ActiverPause(*) {
     IsPaused := true
     StatusText.SetFont("cFF5555") 
     StatusText.Text := "En pause"
-    BtnPauseToggle.Text := "      Activer"
+    BtnPauseToggle.Text := "       Activer"
     ImgPause.Value := GetIconPath("play.png")
     LogMessage("Surveillance du presse-papier mise en pause.")
 }
@@ -487,7 +487,7 @@ DesactiverPause(*) {
     IsPaused := false
     StatusText.SetFont("c55FF55") 
     StatusText.Text := "Active"
-    BtnPauseToggle.Text := "      Pause"
+    BtnPauseToggle.Text := "       Pause"
     ImgPause.Value := GetIconPath("pause.png")
     LogMessage("Surveillance du presse-papier réactivée.")
 }
