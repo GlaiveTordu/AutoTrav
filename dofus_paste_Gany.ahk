@@ -61,91 +61,94 @@ ControlGui.BackColor := "1B1917"
 ControlGui.Title := "AutoTravelerDofus [ATD] - Dofus 3 Unity Multi-Account Helper"
 MettreTitreFonce(ControlGui.Hwnd)
 
-; --- Barre de Menu ---
-MyMenuBar := MenuBar()
+; --- Barre de Menu Custom (Couleur du logiciel) ---
 AccueilMenu := Menu()
 AccueilMenu.Add("Info", AfficherInfo)
-AccueilMenu.Add("Forcer la mise à jour", ForcerVerification)
-MyMenuBar.Add("Acceuil", AccueilMenu)
-ControlGui.MenuBar := MyMenuBar
 
+ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
+BtnMenuAccueil := ControlGui.Add("Text", "x15 y0 w65 h28 Center +0x0200 +BackgroundTrans", "Acceuil")
+BtnMenuUpdate := ControlGui.Add("Text", "x90 y0 w130 h28 Center +0x0200 +BackgroundTrans", "Forcer la mise à jour")
+ControlGui.Add("Text", "x15 y28 w690 h1 +Background33302D")
+
+BtnMenuAccueil.OnEvent("Click", (*) => AccueilMenu.Show(15, 28))
+BtnMenuUpdate.OnEvent("Click", ForcerVerification)
 
 ; --- En-tête (Header) ---
 ControlGui.SetFont("s18 cE5C180 Bold", "Segoe UI")
-ControlGui.Add("Text", "x15 y15 w400 h30 +BackgroundTrans", "AutoTravelerDofus [ATD]")
+ControlGui.Add("Text", "x15 y45 w400 h30 +BackgroundTrans", "AutoTravelerDofus [ATD]")
 
 ControlGui.SetFont("s8.5 c8F8A85 Norm", "Segoe UI")
-ControlGui.Add("Text", "x15 y45 w450 h15 +BackgroundTrans", "Outil de voyage et de gestion multicompte Dofus 3 Unity")
+ControlGui.Add("Text", "x15 y75 w450 h15 +BackgroundTrans", "Outil de voyage et de gestion multicompte Dofus 3 Unity")
 
 ; Bouton Rafraîchir les processus (en haut à droite)
 ControlGui.SetFont("s9 c1B1917 Bold", "Segoe UI")
-BtnRefresh := ControlGui.Add("Text", "x535 y18 w170 h28 Center +0x0200 BackgroundD4A34F +Border vBtnRefresh", "Rafraîchir les processus")
+BtnRefresh := ControlGui.Add("Text", "x535 y48 w170 h28 Center +0x0200 BackgroundD4A34F +Border vBtnRefresh", "Rafraîchir les processus")
 
 ; Ligne de séparation sous l'en-tête
-ControlGui.Add("Text", "x15 y75 w690 h1 +Background33302D")
+ControlGui.Add("Text", "x15 y105 w690 h1 +Background33302D")
 
 ; --- Section Gauche : Instances Dofus ---
 ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
-ControlGui.Add("Text", "x15 y95 w250 h20 +BackgroundTrans", "Instances Dofus détectées")
+ControlGui.Add("Text", "x15 y125 w250 h20 +BackgroundTrans", "Instances Dofus détectées")
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-ControlGui.Add("Picture", "x260 y94 w18 h18 +Disabled +BackgroundTrans", GetIconPath("cycle.png"))
-BtnSetCycle := ControlGui.Add("Text", "x255 y91 w135 h24 Left +0x0200 Background2D2A26 +Border vBtnSetCycle", "       Cycle : " CycleHotkey)
+ControlGui.Add("Picture", "x260 y124 w18 h18 +Disabled +BackgroundTrans", GetIconPath("cycle.png"))
+BtnSetCycle := ControlGui.Add("Text", "x255 y121 w135 h24 Left +0x0200 Background2D2A26 +Border vBtnSetCycle", "       Cycle : " CycleHotkey)
 
 ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
-AccountList := ControlGui.Add("ListView", "x15 y125 w375 h290 -Hdr -Multi Background1E1C1A cWhite -LV0x10 vAccountList", ["Perso", "Raccourci"])
+AccountList := ControlGui.Add("ListView", "x15 y155 w375 h290 -Hdr -Multi Background1E1C1A cWhite -LV0x10 vAccountList", ["Perso", "Raccourci"])
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-BtnMoveUp := ControlGui.Add("Text", "x400 y210 w26 h26 Center +0x0200 Background2D2A26 +Border vBtnMoveUp", "▲")
-BtnMoveDown := ControlGui.Add("Text", "x400 y245 w26 h26 Center +0x0200 Background2D2A26 +Border vBtnMoveDown", "▼")
+BtnMoveUp := ControlGui.Add("Text", "x400 y240 w26 h26 Center +0x0200 Background2D2A26 +Border vBtnMoveUp", "▲")
+BtnMoveDown := ControlGui.Add("Text", "x400 y275 w26 h26 Center +0x0200 Background2D2A26 +Border vBtnMoveDown", "▼")
 
 ; --- Section Droite : Voyage & Logs ---
 ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
-TravelFrame := ControlGui.Add("GroupBox", "x440 y88 w275 h148", "Paramètre du Groupe")
+TravelFrame := ControlGui.Add("GroupBox", "x440 y118 w275 h148", "Paramètre du Groupe")
 
 ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
-ControlGui.Add("Text", "x450 y111 w250 h15 +BackgroundTrans", "Sélectionner le compte qui reçoit la commande :")
+ControlGui.Add("Text", "x450 y141 w250 h15 +BackgroundTrans", "Sélectionner le compte qui reçoit la commande :")
 
-ChoicePerso := ControlGui.Add("DDL", "x450 y130 w255 Background1E1C1A vChoicePerso", ["Aucun compte"])
+ChoicePerso := ControlGui.Add("DDL", "x450 y160 w255 Background1E1C1A vChoicePerso", ["Aucun compte"])
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-ControlGui.Add("Picture", "x455 y165 w18 h18 +Disabled +BackgroundTrans", GetIconPath("invite.png"))
-BtnInviteGroup := ControlGui.Add("Text", "x450 y162 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnInviteGroup", "       Inviter Groupe")
-ControlGui.Add("Picture", "x590 y165 w18 h18 +Disabled +BackgroundTrans", GetIconPath("trade.png"))
-BtnTradeGroup := ControlGui.Add("Text", "x585 y162 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnTradeGroup", "       Échange Général")
+ControlGui.Add("Picture", "x455 y195 w18 h18 +Disabled +BackgroundTrans", GetIconPath("invite.png"))
+BtnInviteGroup := ControlGui.Add("Text", "x450 y192 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnInviteGroup", "       Inviter Groupe")
+ControlGui.Add("Picture", "x590 y195 w18 h18 +Disabled +BackgroundTrans", GetIconPath("trade.png"))
+BtnTradeGroup := ControlGui.Add("Text", "x585 y192 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnTradeGroup", "       Échange Général")
 
 ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
-TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y199 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
+TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y229 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
 TravelAllCheckbox.Value := TravelAll
 
-ShowLogCheckbox := ControlGui.Add("Checkbox", "x450 y247 w250 h18 Checked", "Afficher le journal d'activité")
+ShowLogCheckbox := ControlGui.Add("Checkbox", "x450 y277 w250 h18 Checked", "Afficher le journal d'activité")
 
 ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
-LogTitle := ControlGui.Add("Text", "x450 y271 w250 h18 vLogTitle +BackgroundTrans", "Journal d'activité")
+LogTitle := ControlGui.Add("Text", "x450 y301 w250 h18 vLogTitle +BackgroundTrans", "Journal d'activité")
 
 ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
-LogEdit := ControlGui.Add("Edit", "x450 y291 w255 h125 ReadOnly Multi Background1E1C1A vLogEdit")
+LogEdit := ControlGui.Add("Edit", "x450 y321 w255 h125 ReadOnly Multi Background1E1C1A vLogEdit")
 
 ; --- Barre de Statut (Bas) ---
-ControlGui.Add("Text", "x15 y430 w690 h1 +Background33302D")
+ControlGui.Add("Text", "x15 y460 w690 h1 +Background33302D")
 
 ControlGui.SetFont("s8.5 c8F8A85 Norm", "Segoe UI")
-TxtVersion := ControlGui.Add("Text", "x15 y436 w100 h15 Left +BackgroundTrans vTxtVersion", "Version: v" VersionActuelle)
+TxtVersion := ControlGui.Add("Text", "x15 y466 w100 h15 Left +BackgroundTrans vTxtVersion", "Version: v" VersionActuelle)
 
 ControlGui.SetFont("s7 cFF3333 Italic Norm", "Segoe UI")
-ControlGui.Add("Text", "x15 y454 w100 h14 Left +BackgroundTrans", "keyzome ♥")
+ControlGui.Add("Text", "x15 y484 w100 h14 Left +BackgroundTrans", "keyzome ♥")
 
 ControlGui.SetFont("s8.5 cFFFFFF Bold", "Segoe UI")
-ControlGui.Add("Text", "x125 y442 w170 h18 Left +BackgroundTrans", "Surveillance du presse-papier :")
+ControlGui.Add("Text", "x125 y472 w170 h18 Left +BackgroundTrans", "Surveillance du presse-papier :")
 ControlGui.SetFont("s8.5 c55FF55 Bold", "Segoe UI")
-StatusText := ControlGui.Add("Text", "x300 y442 w90 h18 Left +BackgroundTrans vStatusText", "Active")
+StatusText := ControlGui.Add("Text", "x300 y472 w90 h18 Left +BackgroundTrans vStatusText", "Active")
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-ImgPause := ControlGui.Add("Picture", "x395 y441 w18 h18 +Disabled +BackgroundTrans", GetIconPath("pause.png"))
-BtnPauseToggle := ControlGui.Add("Text", "x390 y437 w100 h24 Left +0x0200 Background2D2A26 +Border vBtnPauseToggle", "       Pause")
+ImgPause := ControlGui.Add("Picture", "x395 y471 w18 h18 +Disabled +BackgroundTrans", GetIconPath("pause.png"))
+BtnPauseToggle := ControlGui.Add("Text", "x390 y467 w100 h24 Left +0x0200 Background2D2A26 +Border vBtnPauseToggle", "       Pause")
 
 ControlGui.SetFont("s9 cE5C180 Bold", "Segoe UI")
-BtnMaj := ControlGui.Add("Picture", "x680 y439 w20 h20 +BackgroundTrans +Hidden vBtnMaj", GetIconPath("update.png"))
+BtnMaj := ControlGui.Add("Picture", "x680 y469 w20 h20 +BackgroundTrans +Hidden vBtnMaj", GetIconPath("update.png"))
 
 ; Événements
 BtnRefresh.OnEvent("Click", (*) => ActualiserProcessDofus(false))
@@ -162,7 +165,7 @@ BtnMaj.OnEvent("Click", ForcerVerification)
 AccountList.OnEvent("DoubleClick", ModifierBindManuel)
 ChoicePerso.OnEvent("Change", ChangerDePersonnage)
 
-ControlGui.Show("X10 Y10 W720 H475 NoActivate")
+ControlGui.Show("X10 Y10 W720 H505 NoActivate")
 WinSetTransparent(130, ControlGui.Hwnd)
 
 SetTimer(VerifierMiseAJour, -500)
