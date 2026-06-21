@@ -4,7 +4,7 @@ SendMode "Input"
 SetTitleMatchMode 2
 
 ; ==================== CONFIGURATION ====================
-VersionActuelle := "0.0.6"
+VersionActuelle := "0.0.7"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
 LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/version.txt"
 LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTravelerDofus%20%5BATD%5D.exe"
@@ -20,11 +20,9 @@ CustomKeys := Map()
 RowData := []  
 CurrentCycleIndex := 0
 TravelAll := false
-AudioAutoMuteActive := false
 BtnMoveUp := ""
 BtnMoveDown := ""
 TravelAllCheckbox := ""
-MuteAllCheckbox := ""
 BtnInviteGroup := ""
 BtnTradeGroup := ""
 
@@ -41,7 +39,6 @@ if FileExist(ConfigFile) {
         }
         CycleHotkey := IniRead(ConfigFile, "Config", "CycleHotkey", "Tab")
         TravelAll := (IniRead(ConfigFile, "Config", "TravelAll", "0") == "1")
-        AudioAutoMuteActive := (IniRead(ConfigFile, "Config", "AudioAutoMute", "0") == "1")
     }
 } else {
     CycleHotkey := "Tab"
@@ -91,23 +88,20 @@ ControlGui.Add("Text", "x450 y123 w250 h15 +BackgroundTrans", "Sélectionner le 
 ChoicePerso := ControlGui.Add("DDL", "x450 y143 w255 Background1E1C1A vChoicePerso", ["Aucun compte"])
 
 ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
-TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y172 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
+TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y175 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
 TravelAllCheckbox.Value := TravelAll
 
-MuteAllCheckbox := ControlGui.Add("Checkbox", "x450 y191 w250 h18 vMuteAllCheckbox", "Mute Dofus en arrière-plan")
-MuteAllCheckbox.Value := AudioAutoMuteActive
-
-ShowLogCheckbox := ControlGui.Add("Checkbox", "x450 y210 w250 h18 Checked", "Afficher le journal d'activité")
+ShowLogCheckbox := ControlGui.Add("Checkbox", "x450 y198 w250 h18 Checked", "Afficher le journal d'activité")
 
 ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
-LogTitle := ControlGui.Add("Text", "x450 y232 w250 h18 vLogTitle +BackgroundTrans", "Journal d'activité")
+LogTitle := ControlGui.Add("Text", "x450 y223 w250 h18 vLogTitle +BackgroundTrans", "Journal d'activité")
 
 ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
-LogEdit := ControlGui.Add("Edit", "x450 y252 w255 h130 ReadOnly Multi Background1E1C1A vLogEdit")
+LogEdit := ControlGui.Add("Edit", "x450 y245 w255 h138 ReadOnly Multi Background1E1C1A vLogEdit")
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-BtnInviteGroup := ControlGui.Add("Text", "x450 y388 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnInviteGroup", "👥 Inviter Groupe")
-BtnTradeGroup := ControlGui.Add("Text", "x585 y388 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnTradeGroup", "🤝 Échange Général")
+BtnInviteGroup := ControlGui.Add("Text", "x450 y389 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnInviteGroup", "👥 Inviter Groupe")
+BtnTradeGroup := ControlGui.Add("Text", "x585 y389 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnTradeGroup", "🤝 Échange Général")
 
 ; --- Barre de Statut (Bas) ---
 ControlGui.Add("Text", "x15 y430 w690 h1 +Background33302D")
@@ -135,7 +129,6 @@ BtnSetCycle.OnEvent("Click", ModifierCycleHotkey)
 BtnMoveUp.OnEvent("Click", (*) => DeplacerCompte("up"))
 BtnMoveDown.OnEvent("Click", (*) => DeplacerCompte("down"))
 TravelAllCheckbox.OnEvent("Click", ToggleTravelAll)
-MuteAllCheckbox.OnEvent("Click", ToggleAudioMute)
 BtnInviteGroup.OnEvent("Click", InviterGroupe)
 BtnTradeGroup.OnEvent("Click", LancerEchangeGeneral)
 ShowLogCheckbox.OnEvent("Click", ToggleLog)
@@ -151,7 +144,6 @@ WinSetTransparent(130, ControlGui.Hwnd)
 SetTimer(VerifierMiseAJour, -500)
 SetTimer(WatchMouse, 100)
 SetTimer(CheckClipboard, 250)
-SetTimer(GestionnaireAudioAutoMute, 300)
 OnMessage(0x0201, WM_LBUTTONDOWN)
 OnMessage(0x0020, WM_SETCURSOR)
 
@@ -542,21 +534,6 @@ ToggleTravelAll(Ctrl, *) {
     LogMessage("Option voyage de groupe " (TravelAll ? "activée" : "désactivée"))
 }
 
-ToggleAudioMute(Ctrl, *) {
-    global AudioAutoMuteActive, ConfigFile, DofusWindows
-    AudioAutoMuteActive := Ctrl.Value
-    IniWrite(AudioAutoMuteActive ? "1" : "0", ConfigFile, "Config", "AudioAutoMute")
-    LogMessage("Option mute en arrière-plan " (AudioAutoMuteActive ? "activée" : "désactivée"))
-    if (!AudioAutoMuteActive) {
-        for win in DofusWindows {
-            try {
-                winPid := WinGetPID(win.hwnd)
-                SetProcessMute(winPid, 0)
-            }
-        }
-    }
-}
-
 DeplacerCompte(direction) {
     global DofusWindows, RowData, ConfigFile, BindsMap, CustomKeys
     RowNumber := AccountList.GetNext(0, "Focused")
@@ -691,80 +668,4 @@ LancerEchangeGeneral(*) {
         }
     }
     LogMessage("Demandes d'échanges envoyées vers " chefName " !")
-}
-
-GestionnaireAudioAutoMute() {
-    global DofusWindows, AudioAutoMuteActive
-    if (!AudioAutoMuteActive)
-        return
-    
-    static lastActiveHwnd := 0
-    activeHwnd := WinActive("A")
-    if (activeHwnd == lastActiveHwnd)
-        return
-    
-    ; Vérifier si la nouvelle fenêtre active est une instance de Dofus
-    isActiveDofus := false
-    for win in DofusWindows {
-        if (activeHwnd == win.hwnd) {
-            isActiveDofus := true
-            break
-        }
-    }
-    
-    ; Si l'utilisateur est sur une autre application (ex: Chrome), on ne change rien
-    ; pour garder le son actif sur le dernier compte Dofus actif.
-    if (!isActiveDofus)
-        return
-        
-    lastActiveHwnd := activeHwnd
-    
-    for win in DofusWindows {
-        try {
-            winPid := WinGetPID(win.hwnd)
-            if (activeHwnd == win.hwnd) {
-                SetProcessMute(winPid, 0) ; Unmute le Dofus actif
-            } else {
-                SetProcessMute(winPid, 1) ; Mute les autres Dofus
-            }
-        }
-    }
-}
-
-SetProcessMute(targetPid, muteState) {
-    static CLSID_MMDeviceEnumerator := "{BCDE0395-E52F-467C-8E3D-C4579291692E}"
-    static IID_IMMDeviceEnumerator  := "{A95664D2-9614-4F35-A746-DE8DB63617E6}"
-    static IID_IAudioSessionManager2 := "{77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F}"
-    static IID_IAudioSessionControl2 := "{BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}"
-    static IID_ISimpleAudioVolume    := "{87CE5498-68D6-44E5-9215-6DA47EF883D8}"
-    
-    clsidFromString(str) {
-        buf := Buffer(16)
-        DllCall("ole32\CLSIDFromString", "Str", str, "Ptr", buf)
-        return buf
-    }
-    
-    try {
-        IMMDeviceEnumerator := ComObject(CLSID_MMDeviceEnumerator, IID_IMMDeviceEnumerator)
-        ComCall(4, IMMDeviceEnumerator, "UInt", 0, "UInt", 0, "Ptr*", &IMMDevice := 0)
-        
-        ComCall(3, IMMDevice, "Ptr", clsidFromString(IID_IAudioSessionManager2), "UInt", 0, "Ptr", 0, "Ptr*", &IAudioSessionManager2 := 0)
-        
-        ComCall(5, IAudioSessionManager2, "Ptr*", &IAudioSessionEnumerator := 0)
-        ComCall(3, IAudioSessionEnumerator, "UInt*", &sessionCount := 0)
-        
-        Loop sessionCount {
-            ComCall(4, IAudioSessionEnumerator, "Int", A_Index - 1, "Ptr*", &IAudioSessionControl := 0)
-            IAudioSessionControl2 := ComObjQuery(IAudioSessionControl, IID_IAudioSessionControl2)
-            
-            ComCall(14, IAudioSessionControl2, "UInt*", &pid := 0)
-            if (pid == targetPid) {
-                sav := ComObjQuery(IAudioSessionControl2, IID_ISimpleAudioVolume)
-                if sav {
-                    ComCall(5, sav, "Int", muteState, "Ptr", 0) ; SetMute
-                }
-                break
-            }
-        }
-    }
 }
