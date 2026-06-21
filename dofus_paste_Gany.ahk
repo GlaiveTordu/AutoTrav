@@ -4,7 +4,7 @@ SendMode "Input"
 SetTitleMatchMode 2
 
 ; ==================== CONFIGURATION ====================
-VersionActuelle := "0.0.5"
+VersionActuelle := "0.0.6"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
 LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/version.txt"
 LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTravelerDofus%20%5BATD%5D.exe"
@@ -702,6 +702,21 @@ GestionnaireAudioAutoMute() {
     activeHwnd := WinActive("A")
     if (activeHwnd == lastActiveHwnd)
         return
+    
+    ; Vérifier si la nouvelle fenêtre active est une instance de Dofus
+    isActiveDofus := false
+    for win in DofusWindows {
+        if (activeHwnd == win.hwnd) {
+            isActiveDofus := true
+            break
+        }
+    }
+    
+    ; Si l'utilisateur est sur une autre application (ex: Chrome), on ne change rien
+    ; pour garder le son actif sur le dernier compte Dofus actif.
+    if (!isActiveDofus)
+        return
+        
     lastActiveHwnd := activeHwnd
     
     for win in DofusWindows {
