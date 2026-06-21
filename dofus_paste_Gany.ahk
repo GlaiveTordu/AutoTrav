@@ -18,7 +18,7 @@ ConfigFile := A_ScriptDir "\config_swapper.ini"
 ; =======================================================
 
 GetIconPath(name) {
-    return A_IsCompiled ? "*iRES:" name : name
+    return A_IsCompiled ? "*iRES:" name : A_ScriptDir "\" name
 }
 
 TargetCharacter := ""
