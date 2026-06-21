@@ -4,7 +4,7 @@ SendMode "Input"
 SetTitleMatchMode 2
 
 ; ==================== CONFIGURATION ====================
-VersionActuelle := "1.1.0"
+VersionActuelle := "1.1.1"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
 LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/version.txt"
 LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTrav.exe"
@@ -292,11 +292,11 @@ ForcerVerification(*) {
     global LienVersion, LienMaj, LienExe, VersionActuelle, BtnMaj
     LogMessage("Recherche de mise à jour...")
     try {
-        whr := ComObject("Msxml2.XMLHTTP")
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
         whr.Open("GET", LienVersion, false)
         whr.Send()
         VersionInternet := Trim(whr.ResponseText)
-        if (VersionInternet != "" && VersionInternet > VersionActuelle) {
+        if (VersionInternet != "" && VerCompare(VersionInternet, VersionActuelle) > 0) {
             BtnMaj.SetFont("cFFFF00")
             LogMessage("Mise à jour disponible : v" VersionInternet " !")
             if (MsgBox("Mise à jour disponible (v" VersionInternet ").`nInstaller maintenant ?", "MAJ", 4 + 32) == "Yes") {
@@ -323,7 +323,7 @@ ForcerVerification(*) {
                 } else {
                     ; === Mise à jour .ahk via Gist ===
                     try {
-                        whr2 := ComObject("Msxml2.XMLHTTP")
+                        whr2 := ComObject("WinHttp.WinHttpRequest.5.1")
                         whr2.Open("GET", LienMaj, false)
                         whr2.Send()
                         FileOpen(A_ScriptFullPath, "w", "UTF-8").Write(whr2.ResponseText)
@@ -338,8 +338,8 @@ ForcerVerification(*) {
         } else {
             LogMessage("Impossible de lire la version sur le serveur.")
         }
-    } catch {
-        LogMessage("Erreur de connexion lors de la recherche de mise à jour.")
+    } catch as e {
+        LogMessage("Erreur de connexion : " e.Message)
     }
 }
 
@@ -416,11 +416,11 @@ DesactiverPause(*) {
 VerifierMiseAJour() {
     global LienVersion, VersionActuelle, BtnMaj
     try {
-        whr := ComObject("Msxml2.XMLHTTP")
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
         whr.Open("GET", LienVersion, false)
         whr.Send()
         VersionInternet := Trim(whr.ResponseText)
-        if (VersionInternet != "" && VersionInternet > VersionActuelle) {
+        if (VersionInternet != "" && VerCompare(VersionInternet, VersionActuelle) > 0) {
             BtnMaj.SetFont("cFFFF00")
             LogMessage("Mise à jour disponible : v" VersionInternet " ! Cliquez sur 🔄 pour l'installer.")
         }
