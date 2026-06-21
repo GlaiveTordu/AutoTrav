@@ -19,6 +19,14 @@ BindsMap := Map()
 CustomKeys := Map() 
 RowData := []  
 CurrentCycleIndex := 0
+TravelAll := false
+AudioAutoMuteActive := false
+BtnMoveUp := ""
+BtnMoveDown := ""
+TravelAllCheckbox := ""
+MuteAllCheckbox := ""
+BtnInviteGroup := ""
+BtnTradeGroup := ""
 
 ; Chargement des configurations
 if FileExist(ConfigFile) {
@@ -32,6 +40,8 @@ if FileExist(ConfigFile) {
             }
         }
         CycleHotkey := IniRead(ConfigFile, "Config", "CycleHotkey", "Tab")
+        TravelAll := (IniRead(ConfigFile, "Config", "TravelAll", "0") == "1")
+        AudioAutoMuteActive := (IniRead(ConfigFile, "Config", "AudioAutoMute", "0") == "1")
     }
 } else {
     CycleHotkey := "Tab"
@@ -65,7 +75,11 @@ ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
 BtnSetCycle := ControlGui.Add("Text", "x295 y91 w135 h24 Center +0x0200 Background2D2A26 +Border vBtnSetCycle", "⚙ Cycle : " CycleHotkey)
 
 ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
-AccountList := ControlGui.Add("ListView", "x15 y125 w415 h290 -Hdr -Multi Background1E1C1A cWhite -LV0x10 vAccountList", ["Perso", "Raccourci"])
+AccountList := ControlGui.Add("ListView", "x15 y125 w375 h290 -Hdr -Multi Background1E1C1A cWhite -LV0x10 vAccountList", ["Perso", "Raccourci"])
+
+ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
+BtnMoveUp := ControlGui.Add("Text", "x400 y210 w26 h26 Center +0x0200 Background2D2A26 +Border vBtnMoveUp", "▲")
+BtnMoveDown := ControlGui.Add("Text", "x400 y245 w26 h26 Center +0x0200 Background2D2A26 +Border vBtnMoveDown", "▼")
 
 ; --- Section Droite : Voyage & Logs ---
 ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
@@ -77,13 +91,23 @@ ControlGui.Add("Text", "x450 y123 w250 h15 +BackgroundTrans", "Sélectionner le 
 ChoicePerso := ControlGui.Add("DDL", "x450 y143 w255 Background1E1C1A vChoicePerso", ["Aucun compte"])
 
 ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
-ShowLogCheckbox := ControlGui.Add("Checkbox", "x450 y180 w250 h20 Checked", "Afficher le journal d'activité")
+TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y172 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
+TravelAllCheckbox.Value := TravelAll
+
+MuteAllCheckbox := ControlGui.Add("Checkbox", "x450 y191 w250 h18 vMuteAllCheckbox", "Mute Dofus en arrière-plan")
+MuteAllCheckbox.Value := AudioAutoMuteActive
+
+ShowLogCheckbox := ControlGui.Add("Checkbox", "x450 y210 w250 h18 Checked", "Afficher le journal d'activité")
 
 ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
-LogTitle := ControlGui.Add("Text", "x450 y215 w250 h20 vLogTitle +BackgroundTrans", "Journal d'activité")
+LogTitle := ControlGui.Add("Text", "x450 y232 w250 h18 vLogTitle +BackgroundTrans", "Journal d'activité")
 
 ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
-LogEdit := ControlGui.Add("Edit", "x450 y238 w255 h177 ReadOnly Multi Background1E1C1A vLogEdit")
+LogEdit := ControlGui.Add("Edit", "x450 y252 w255 h130 ReadOnly Multi Background1E1C1A vLogEdit")
+
+ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
+BtnInviteGroup := ControlGui.Add("Text", "x450 y388 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnInviteGroup", "👥 Inviter Groupe")
+BtnTradeGroup := ControlGui.Add("Text", "x585 y388 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnTradeGroup", "🤝 Échange Général")
 
 ; --- Barre de Statut (Bas) ---
 ControlGui.Add("Text", "x15 y430 w690 h1 +Background33302D")
@@ -108,6 +132,12 @@ BtnMaj := ControlGui.Add("Text", "x675 y437 w30 h24 Center +0x0200 Background2D2
 ; Événements
 BtnRefresh.OnEvent("Click", (*) => ActualiserProcessDofus(false))
 BtnSetCycle.OnEvent("Click", ModifierCycleHotkey)
+BtnMoveUp.OnEvent("Click", (*) => DeplacerCompte("up"))
+BtnMoveDown.OnEvent("Click", (*) => DeplacerCompte("down"))
+TravelAllCheckbox.OnEvent("Click", ToggleTravelAll)
+MuteAllCheckbox.OnEvent("Click", ToggleAudioMute)
+BtnInviteGroup.OnEvent("Click", InviterGroupe)
+BtnTradeGroup.OnEvent("Click", LancerEchangeGeneral)
 ShowLogCheckbox.OnEvent("Click", ToggleLog)
 StatusText.OnEvent("Click", TogglePause)
 BtnPauseToggle.OnEvent("Click", TogglePause)
@@ -121,6 +151,7 @@ WinSetTransparent(130, ControlGui.Hwnd)
 SetTimer(VerifierMiseAJour, -500)
 SetTimer(WatchMouse, 100)
 SetTimer(CheckClipboard, 250)
+SetTimer(GestionnaireAudioAutoMute, 300)
 OnMessage(0x0201, WM_LBUTTONDOWN)
 OnMessage(0x0020, WM_SETCURSOR)
 
@@ -191,36 +222,69 @@ ActualiserProcessDofus(DemanderBinds := false) {
     ListePseudos := []
     
     WinList := WinGetList("ahk_exe Dofus.exe")
+    tempList := []
     for hwnd in WinList {
         title := WinGetTitle(hwnd)
         ; Extraire seulement PSEUDO - CLASSE (retirer version, "Release", etc.)
         pseudo := RegExReplace(title, "\s*-\s*\d[^-]*-\s*Release.*$", "")
         pseudo := RegExReplace(pseudo, "\s*-\s*Dofus.*", "")
         if (pseudo != "" && !InStr(pseudo, "Dofus Updater")) {
-            DofusWindows.Push({hwnd: hwnd, name: pseudo})
-            ListePseudos.Push(pseudo)
-            
-            bindKey := CustomKeys.Has(pseudo) ? CustomKeys[pseudo] : IniRead(ConfigFile, "Binds", pseudo, "")
-            
-            if (bindKey == "" || DemanderBinds) {
-                IB := InputBox("Entrez la touche de raccourci pour : " pseudo, "Binds", "w300 h130", bindKey == "" ? "F1" : bindKey)
-                if (IB.Result == "OK" && IB.Value != "") {
-                    bindKey := IB.Value
-                    CustomKeys[pseudo] := bindKey
-                    IniWrite(bindKey, ConfigFile, "Binds", pseudo) 
-                } else if (bindKey == "")
-                    bindKey := "F" DofusWindows.Length
-            } else {
-                CustomKeys[pseudo] := bindKey
-            }
-            
-            RowData.Push({pseudo: pseudo, bind: bindKey})
-            AccountList.Add(, TronquerTexte(pseudo, 40), bindKey)
-            BindsMap[bindKey] := hwnd
-            try Hotkey(bindKey, ActiverFenetreDofus, "On")
-            
-            LogMessage("Nouvelle instance détectée : " pseudo)
+            tempList.Push({hwnd: hwnd, name: pseudo})
         }
+    }
+    
+    ; Tri par ordre personnalisé (CycleOrder)
+    savedOrderStr := ""
+    try savedOrderStr := IniRead(ConfigFile, "Config", "CycleOrder")
+    if (savedOrderStr != "") {
+        savedOrderArr := StrSplit(savedOrderStr, ",")
+        orderedList := []
+        
+        ; Ajouter en premier les fenêtres correspondant à l'ordre sauvegardé
+        for name in savedOrderArr {
+            Loop tempList.Length {
+                idx := A_Index
+                if (tempList[idx].name == name) {
+                    orderedList.Push(tempList[idx])
+                    tempList.RemoveAt(idx)
+                    break
+                }
+            }
+        }
+        ; Ajouter les nouvelles fenêtres restantes
+        for win in tempList {
+            orderedList.Push(win)
+        }
+        tempList := orderedList
+    }
+    
+    ; Enregistrement et mise en place
+    for win in tempList {
+        pseudo := win.name
+        hwnd := win.hwnd
+        DofusWindows.Push({hwnd: hwnd, name: pseudo})
+        ListePseudos.Push(pseudo)
+        
+        bindKey := CustomKeys.Has(pseudo) ? CustomKeys[pseudo] : IniRead(ConfigFile, "Binds", pseudo, "")
+        
+        if (bindKey == "" || DemanderBinds) {
+            IB := InputBox("Entrez la touche de raccourci pour : " pseudo, "Binds", "w300 h130", bindKey == "" ? "F1" : bindKey)
+            if (IB.Result == "OK" && IB.Value != "") {
+                bindKey := IB.Value
+                CustomKeys[pseudo] := bindKey
+                IniWrite(bindKey, ConfigFile, "Binds", pseudo) 
+            } else if (bindKey == "")
+                bindKey := "F" DofusWindows.Length
+        } else {
+            CustomKeys[pseudo] := bindKey
+        }
+        
+        RowData.Push({pseudo: pseudo, bind: bindKey})
+        AccountList.Add(, TronquerTexte(pseudo, 40), bindKey != "" ? "[ " bindKey " ]" : "")
+        BindsMap[bindKey] := hwnd
+        try Hotkey(bindKey, ActiverFenetreDofus, "On")
+        
+        LogMessage("Nouvelle instance détectée : " pseudo)
     }
     
     ChoicePerso.Delete()
@@ -241,7 +305,7 @@ ActualiserProcessDofus(DemanderBinds := false) {
     }
     
     try Hotkey(CycleHotkey, CycleFenetresDofus, "On")
-    AccountList.ModifyCol(1, 300)
+    AccountList.ModifyCol(1, 260)
     AccountList.ModifyCol(2, 90)
 }
 
@@ -350,15 +414,25 @@ ChangerDePersonnage(GuiCtrl, *) {
 }
 
 CheckClipboard() {
-    global lastClip, TargetCharacter, IsPaused
+    global lastClip, TargetCharacter, IsPaused, TravelAll, DofusWindows
     if (IsPaused || TargetCharacter == "" || TargetCharacter == "Aucun compte")
         return
     current := Trim(A_Clipboard)
     if (current != lastClip && current != "") {
         if RegExMatch(current, "i)(/travel\s*)?-?\d+,-?\d+") {
             lastClip := current
-            LogMessage("Coordonnées détectées : " current " -> Envoi à " TargetCharacter)
-            GoToDofusAndPaste(current, TargetCharacter)
+            if (TravelAll && DofusWindows.Length > 0) {
+                LogMessage("Coordonnées détectées : " current " -> Envoi à TOUTE l'équipe")
+                for win in DofusWindows {
+                    if WinExist(win.hwnd) {
+                        GoToDofusAndPaste(current, win.name)
+                        Sleep Random(400, 600)
+                    }
+                }
+            } else {
+                LogMessage("Coordonnées détectées : " current " -> Envoi à " TargetCharacter)
+                GoToDofusAndPaste(current, TargetCharacter)
+            }
             A_Clipboard := ""
             lastClip := ""
         }
@@ -451,11 +525,231 @@ QuitterScript(*) {
 }
 
 WM_SETCURSOR(wParam, lParam, msg, hwnd) {
-    global BtnRefresh, BtnSetCycle, BtnPauseToggle, BtnMaj
+    global BtnRefresh, BtnSetCycle, BtnPauseToggle, BtnMaj, BtnMoveUp, BtnMoveDown, BtnInviteGroup, BtnTradeGroup
     try {
-        if (hwnd == BtnRefresh.Hwnd || hwnd == BtnSetCycle.Hwnd || hwnd == BtnPauseToggle.Hwnd || hwnd == BtnMaj.Hwnd) {
+        if (hwnd == BtnRefresh.Hwnd || hwnd == BtnSetCycle.Hwnd || hwnd == BtnPauseToggle.Hwnd || hwnd == BtnMaj.Hwnd 
+            || hwnd == BtnMoveUp.Hwnd || hwnd == BtnMoveDown.Hwnd || hwnd == BtnInviteGroup.Hwnd || hwnd == BtnTradeGroup.Hwnd) {
             DllCall("SetCursor", "Ptr", DllCall("LoadCursor", "Ptr", 0, "Ptr", 32649, "Ptr"))
             return String(true)
+        }
+    }
+}
+
+ToggleTravelAll(Ctrl, *) {
+    global TravelAll, ConfigFile
+    TravelAll := Ctrl.Value
+    IniWrite(TravelAll ? "1" : "0", ConfigFile, "Config", "TravelAll")
+    LogMessage("Option voyage de groupe " (TravelAll ? "activée" : "désactivée"))
+}
+
+ToggleAudioMute(Ctrl, *) {
+    global AudioAutoMuteActive, ConfigFile, DofusWindows
+    AudioAutoMuteActive := Ctrl.Value
+    IniWrite(AudioAutoMuteActive ? "1" : "0", ConfigFile, "Config", "AudioAutoMute")
+    LogMessage("Option mute en arrière-plan " (AudioAutoMuteActive ? "activée" : "désactivée"))
+    if (!AudioAutoMuteActive) {
+        for win in DofusWindows {
+            try {
+                winPid := WinGetPID(win.hwnd)
+                SetProcessMute(winPid, 0)
+            }
+        }
+    }
+}
+
+DeplacerCompte(direction) {
+    global DofusWindows, RowData, ConfigFile, BindsMap, CustomKeys
+    RowNumber := AccountList.GetNext(0, "Focused")
+    if (RowNumber = 0)
+        return
+    
+    targetIndex := RowNumber
+    swapIndex := (direction == "up") ? RowNumber - 1 : RowNumber + 1
+    
+    if (swapIndex < 1 || swapIndex > DofusWindows.Length)
+        return
+        
+    ; Intervertir dans les tableaux
+    tempWin := DofusWindows[targetIndex]
+    DofusWindows[targetIndex] := DofusWindows[swapIndex]
+    DofusWindows[swapIndex] := tempWin
+    
+    tempRow := RowData[targetIndex]
+    RowData[targetIndex] := RowData[swapIndex]
+    RowData[swapIndex] := tempRow
+    
+    ; Reconstruire la liste et réattribuer les hotkeys
+    ReconstruireBindsEtListView()
+    
+    ; Sauvegarder l'ordre
+    SaveCycleOrder()
+    
+    ; Sélectionner l'élément déplacé
+    AccountList.Modify(swapIndex, "+Focus +Select")
+}
+
+ReconstruireBindsEtListView() {
+    global DofusWindows, RowData, BindsMap
+    AccountList.Delete()
+    
+    for key, hwnd in BindsMap
+        try Hotkey(key, "Off")
+    BindsMap := Map()
+    
+    Loop DofusWindows.Length {
+        pseudo := RowData[A_Index].pseudo
+        bindKey := RowData[A_Index].bind
+        
+        AccountList.Add(, TronquerTexte(pseudo, 40), bindKey != "" ? "[ " bindKey " ]" : "")
+        BindsMap[bindKey] := DofusWindows[A_Index].hwnd
+        try Hotkey(bindKey, ActiverFenetreDofus, "On")
+    }
+}
+
+SaveCycleOrder() {
+    global DofusWindows, ConfigFile
+    orderStr := ""
+    for item in DofusWindows {
+        orderStr .= (orderStr == "" ? "" : ",") item.name
+    }
+    IniWrite(orderStr, ConfigFile, "Config", "CycleOrder")
+}
+
+InviterGroupe(*) {
+    global DofusWindows
+    if (DofusWindows.Length < 2) {
+        LogMessage("Pas assez de comptes détectés pour former un groupe.")
+        return
+    }
+    
+    chefWin := DofusWindows[1]
+    if !WinExist(chefWin.hwnd) {
+        LogMessage("Le compte principal n'existe pas.")
+        return
+    }
+    
+    LogMessage("Lancement des invitations de groupe depuis " chefWin.name "...")
+    WinActivate(chefWin.hwnd)
+    if WinWaitActive(chefWin.hwnd, , 3) {
+        Sleep 200
+        for idx, win in DofusWindows {
+            if (idx == 1)
+                continue
+            
+            cmd := "/invite " win.name
+            A_Clipboard := cmd
+            Sleep 50
+            
+            Send "{Enter down}"
+            Sleep Random(25, 45)
+            Send "{Enter up}"
+            Sleep Random(100, 150)
+            Send "^v"
+            Sleep Random(100, 150)
+            Send "{Enter down}"
+            Sleep Random(25, 45)
+            Send "{Enter up}"
+            Sleep Random(300, 500)
+        }
+        LogMessage("Invitations de groupe envoyées !")
+    }
+}
+
+LancerEchangeGeneral(*) {
+    global DofusWindows
+    if (DofusWindows.Length < 2) {
+        LogMessage("Pas assez de comptes détectés pour lancer un échange.")
+        return
+    }
+    
+    chefName := DofusWindows[1].name
+    LogMessage("Lancement des invitations d'échange vers " chefName "...")
+    
+    for idx, win in DofusWindows {
+        if (idx == 1)
+            continue
+        
+        if WinExist(win.hwnd) {
+            WinActivate(win.hwnd)
+            if WinWaitActive(win.hwnd, , 3) {
+                Sleep 200
+                cmd := "/exchange " chefName
+                A_Clipboard := cmd
+                Sleep 50
+                
+                Send "{Enter down}"
+                Sleep Random(25, 45)
+                Send "{Enter up}"
+                Sleep Random(100, 150)
+                Send "^v"
+                Sleep Random(100, 150)
+                Send "{Enter down}"
+                Sleep Random(25, 45)
+                Send "{Enter up}"
+                Sleep Random(300, 500)
+            }
+        }
+    }
+    LogMessage("Demandes d'échanges envoyées vers " chefName " !")
+}
+
+GestionnaireAudioAutoMute() {
+    global DofusWindows, AudioAutoMuteActive
+    if (!AudioAutoMuteActive)
+        return
+    
+    static lastActiveHwnd := 0
+    activeHwnd := WinActive("A")
+    if (activeHwnd == lastActiveHwnd)
+        return
+    lastActiveHwnd := activeHwnd
+    
+    for win in DofusWindows {
+        try {
+            winPid := WinGetPID(win.hwnd)
+            if (activeHwnd == win.hwnd) {
+                SetProcessMute(winPid, 0) ; Unmute le Dofus actif
+            } else {
+                SetProcessMute(winPid, 1) ; Mute les autres Dofus
+            }
+        }
+    }
+}
+
+SetProcessMute(targetPid, muteState) {
+    static CLSID_MMDeviceEnumerator := "{BCDE0395-E52F-467C-8E3D-C4579291692E}"
+    static IID_IMMDeviceEnumerator  := "{A95664D2-9614-4F35-A746-DE8DB63617E6}"
+    static IID_IAudioSessionManager2 := "{77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F}"
+    static IID_IAudioSessionControl2 := "{BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D}"
+    static IID_ISimpleAudioVolume    := "{87CE5498-68D6-44E5-9215-6DA47EF883D8}"
+    
+    clsidFromString(str) {
+        buf := Buffer(16)
+        DllCall("ole32\CLSIDFromString", "Str", str, "Ptr", buf)
+        return buf
+    }
+    
+    try {
+        IMMDeviceEnumerator := ComObject(CLSID_MMDeviceEnumerator, IID_IMMDeviceEnumerator)
+        ComCall(4, IMMDeviceEnumerator, "UInt", 0, "UInt", 0, "Ptr*", &IMMDevice := 0)
+        
+        ComCall(3, IMMDevice, "Ptr", clsidFromString(IID_IAudioSessionManager2), "UInt", 0, "Ptr", 0, "Ptr*", &IAudioSessionManager2 := 0)
+        
+        ComCall(5, IAudioSessionManager2, "Ptr*", &IAudioSessionEnumerator := 0)
+        ComCall(3, IAudioSessionEnumerator, "UInt*", &sessionCount := 0)
+        
+        Loop sessionCount {
+            ComCall(4, IAudioSessionEnumerator, "Int", A_Index - 1, "Ptr*", &IAudioSessionControl := 0)
+            IAudioSessionControl2 := ComObjQuery(IAudioSessionControl, IID_IAudioSessionControl2)
+            
+            ComCall(14, IAudioSessionControl2, "UInt*", &pid := 0)
+            if (pid == targetPid) {
+                sav := ComObjQuery(IAudioSessionControl2, IID_ISimpleAudioVolume)
+                if sav {
+                    ComCall(5, sav, "Int", muteState, "Ptr", 0) ; SetMute
+                }
+                break
+            }
         }
     }
 }
