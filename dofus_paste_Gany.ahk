@@ -4,7 +4,7 @@ SendMode "Input"
 SetTitleMatchMode 2
 
 ; ==================== CONFIGURATION ====================
-VersionActuelle := "1.1.2"
+VersionActuelle := "0.0.5"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
 LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/version.txt"
 LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTrav.exe"
