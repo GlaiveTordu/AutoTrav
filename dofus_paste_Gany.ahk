@@ -4,7 +4,7 @@ SendMode "Input"
 SetTitleMatchMode 2
 
 ; ==================== CONFIGURATION ====================
-VersionActuelle := "0.0.9"
+VersionActuelle := "0.0.8"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
 LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/version.txt"
 LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTravelerDofus%20%5BATD%5D.exe"
@@ -80,31 +80,28 @@ BtnMoveDown := ControlGui.Add("Text", "x400 y245 w26 h26 Center +0x0200 Backgrou
 
 ; --- Section Droite : Voyage & Logs ---
 ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
-TravelFrame := ControlGui.Add("GroupBox", "x440 y88 w275 h163", "Paramètres du Voyage (/travel)")
+TravelFrame := ControlGui.Add("GroupBox", "x440 y88 w275 h148", "Paramètre du Groupe")
 
 ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
 ControlGui.Add("Text", "x450 y111 w250 h15 +BackgroundTrans", "Sélectionner le compte qui reçoit la commande :")
 
 ChoicePerso := ControlGui.Add("DDL", "x450 y130 w255 Background1E1C1A vChoicePerso", ["Aucun compte"])
 
-ControlGui.SetFont("s8.5 c8F8A85 Norm", "Segoe UI")
-GroupFrame := ControlGui.Add("GroupBox", "x450 y158 w255 h55", "Actions de Groupe")
-
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
-BtnInviteGroup := ControlGui.Add("Text", "x460 y177 w110 h24 Center +0x0200 Background2D2A26 +Border vBtnInviteGroup", "👥 Inviter Groupe")
-BtnTradeGroup := ControlGui.Add("Text", "x582 y177 w110 h24 Center +0x0200 Background2D2A26 +Border vBtnTradeGroup", "🤝 Échange Général")
+BtnInviteGroup := ControlGui.Add("Text", "x450 y162 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnInviteGroup", "👥 Inviter Groupe")
+BtnTradeGroup := ControlGui.Add("Text", "x585 y162 w120 h24 Center +0x0200 Background2D2A26 +Border vBtnTradeGroup", "🤝 Échange Général")
 
 ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
-TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y224 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
+TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y199 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
 TravelAllCheckbox.Value := TravelAll
 
-ShowLogCheckbox := ControlGui.Add("Checkbox", "x450 y262 w250 h18 Checked", "Afficher le journal d'activité")
+ShowLogCheckbox := ControlGui.Add("Checkbox", "x450 y247 w250 h18 Checked", "Afficher le journal d'activité")
 
 ControlGui.SetFont("s10 cFFFFFF Bold", "Segoe UI")
-LogTitle := ControlGui.Add("Text", "x450 y286 w250 h18 vLogTitle +BackgroundTrans", "Journal d'activité")
+LogTitle := ControlGui.Add("Text", "x450 y271 w250 h18 vLogTitle +BackgroundTrans", "Journal d'activité")
 
 ControlGui.SetFont("s9 cFFFFFF Norm", "Segoe UI")
-LogEdit := ControlGui.Add("Edit", "x450 y306 w255 h110 ReadOnly Multi Background1E1C1A vLogEdit")
+LogEdit := ControlGui.Add("Edit", "x450 y291 w255 h125 ReadOnly Multi Background1E1C1A vLogEdit")
 
 ; --- Barre de Statut (Bas) ---
 ControlGui.Add("Text", "x15 y430 w690 h1 +Background33302D")
