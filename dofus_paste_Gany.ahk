@@ -7,7 +7,7 @@ SetTitleMatchMode 2
 VersionActuelle := "0.0.5"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
 LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/version.txt"
-LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTrav.exe"
+LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTravelerDofus%20%5BATD%5D.exe"
 ConfigFile := A_ScriptDir "\config_swapper.ini"
 ; =======================================================
 
@@ -37,15 +37,15 @@ if FileExist(ConfigFile) {
     CycleHotkey := "Tab"
 }
 
-TrayTip "AutoTrav", "Interface stable activée ! 🚀", 1
+TrayTip "AutoTravelerDofus [ATD]", "Interface stable activée ! 🚀", 1
 
 ControlGui := Gui("+AlwaysOnTop -MaximizeBox +ToolWindow +E0x02000000 +E0x00080000")
 ControlGui.BackColor := "1B1917"
-ControlGui.Title := "AutoTrav - Dofus 3 Unity Multi-Account Helper"
+ControlGui.Title := "AutoTravelerDofus [ATD] - Dofus 3 Unity Multi-Account Helper"
 
 ; --- En-tête (Header) ---
 ControlGui.SetFont("s18 cD4A34F Bold", "Segoe UI")
-ControlGui.Add("Text", "x15 y15 w400 h30 +BackgroundTrans", "AUTOTRAV")
+ControlGui.Add("Text", "x15 y15 w400 h30 +BackgroundTrans", "AUTOTRAVELERDOFUS [ATD]")
 
 ControlGui.SetFont("s8.5 c8F8A85 Norm", "Segoe UI")
 ControlGui.Add("Text", "x15 y45 w450 h15 +BackgroundTrans", "Outil de voyage et de gestion multicompte Dofus 3 Unity")
@@ -124,7 +124,7 @@ SetTimer(CheckClipboard, 250)
 OnMessage(0x0201, WM_LBUTTONDOWN)
 OnMessage(0x0020, WM_SETCURSOR)
 
-LogMessage("AutoTrav démarré avec succès.")
+LogMessage("AutoTravelerDofus [ATD] démarré avec succès.")
 ActualiserProcessDofus(false)
 return
 
@@ -304,9 +304,9 @@ ForcerVerification(*) {
                     ; === Mise à jour .exe via GitHub Releases ===
                     LogMessage("Téléchargement de la mise à jour en cours...")
                     try {
-                        newExe := A_Temp "\AutoTrav_update.exe"
+                        newExe := A_Temp "\AutoTravelerDofus_update.exe"
                         Download(LienExe, newExe)
-                        batPath := A_Temp "\autotrav_updater.bat"
+                        batPath := A_Temp "\atd_updater.bat"
                         currentExe := A_ScriptFullPath
                         batContent := "@echo off`r`n"
                             . "timeout /t 2 /nobreak >nul`r`n"
