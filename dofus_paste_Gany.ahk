@@ -295,7 +295,7 @@ ForcerVerification(*) {
         whr := ComObject("WinHttp.WinHttpRequest.5.1")
         whr.Open("GET", LienVersion, false)
         whr.Send()
-        VersionInternet := Trim(whr.ResponseText)
+        VersionInternet := Trim(whr.ResponseText, " `t`r`n")
         if (VersionInternet != "" && VerCompare(VersionInternet, VersionActuelle) > 0) {
             BtnMaj.SetFont("cFFFF00")
             LogMessage("Mise à jour disponible : v" VersionInternet " !")
@@ -419,7 +419,7 @@ VerifierMiseAJour() {
         whr := ComObject("WinHttp.WinHttpRequest.5.1")
         whr.Open("GET", LienVersion, false)
         whr.Send()
-        VersionInternet := Trim(whr.ResponseText)
+        VersionInternet := Trim(whr.ResponseText, " `t`r`n")
         if (VersionInternet != "" && VerCompare(VersionInternet, VersionActuelle) > 0) {
             BtnMaj.SetFont("cFFFF00")
             LogMessage("Mise à jour disponible : v" VersionInternet " ! Cliquez sur 🔄 pour l'installer.")
