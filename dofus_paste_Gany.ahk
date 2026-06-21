@@ -164,6 +164,7 @@ BtnPauseToggle.OnEvent("Click", TogglePause)
 BtnMaj.OnEvent("Click", ForcerVerification)
 AccountList.OnEvent("DoubleClick", ModifierBindManuel)
 ChoicePerso.OnEvent("Change", ChangerDePersonnage)
+ControlGui.OnEvent("Close", QuitterScript)
 
 ControlGui.Show("X10 Y10 W720 H505 NoActivate")
 WinSetTransparent(130, ControlGui.Hwnd)
