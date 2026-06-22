@@ -391,16 +391,36 @@ ForcerVerification(*) {
                     ; === Mise à jour .exe via GitHub Releases ===
                     LogMessage("Téléchargement de la mise à jour en cours...")
                     try {
+                        tags := ["v" VersionInternet, "V" VersionInternet]
+                        filenames := ["AutoTravelerDofus.ATD.exe", "AutoTravelerDofus [ATD].exe"]
+                        
+                        LienExeDynamique := ""
                         whrCheck := ComObject("WinHttp.WinHttpRequest.5.1")
-                        whrCheck.Open("HEAD", LienExe, false)
-                        whrCheck.Send()
-                        if (whrCheck.Status != 200) {
-                            LogMessage("Erreur : L'exécutable n'est pas encore disponible sur le serveur (404).")
-                            MsgBox("L'exécutable de mise à jour n'a pas pu être trouvé sur GitHub (404).`nAssurez-vous d'avoir publié la release v" VersionInternet " avec le fichier 'AutoTravelerDofus [ATD].exe' en pièce jointe sur GitHub.", "Erreur de mise à jour", 16)
+                        found := false
+                        
+                        for tag in tags {
+                            for filename in filenames {
+                                url := "https://github.com/GlaiveTordu/AutoTrav/releases/download/" tag "/" filename
+                                try {
+                                    whrCheck.Open("HEAD", url, false)
+                                    whrCheck.Send()
+                                    if (whrCheck.Status == 200) {
+                                        LienExeDynamique := url
+                                        found := true
+                                        break 2
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (!found) {
+                            LogMessage("Erreur : L'exécutable de mise à jour n'a pas pu être trouvé sur GitHub (404).")
+                            MsgBox("L'exécutable de mise à jour n'a pas pu être trouvé sur GitHub (404).`n`nAssurez-vous d'avoir publié la release avec le tag 'v" VersionInternet "' (ou 'V" VersionInternet "') contenant le fichier 'AutoTravelerDofus.ATD.exe' ou 'AutoTravelerDofus [ATD].exe' sur GitHub.", "Erreur de mise à jour", 16)
                             return
                         }
+                        
                         newExe := A_Temp "\AutoTravelerDofus_update.exe"
-                        Download(LienExe, newExe)
+                        Download(LienExeDynamique, newExe)
                         batPath := A_Temp "\atd_updater.bat"
                         currentExe := A_ScriptFullPath
                         batContent := "@echo off`r`n"
