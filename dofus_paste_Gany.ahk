@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 #SingleInstance Force
 SendMode "Input"
 SetTitleMatchMode 2
@@ -391,6 +391,14 @@ ForcerVerification(*) {
                     ; === Mise à jour .exe via GitHub Releases ===
                     LogMessage("Téléchargement de la mise à jour en cours...")
                     try {
+                        whrCheck := ComObject("WinHttp.WinHttpRequest.5.1")
+                        whrCheck.Open("HEAD", LienExe, false)
+                        whrCheck.Send()
+                        if (whrCheck.Status != 200) {
+                            LogMessage("Erreur : L'exécutable n'est pas encore disponible sur le serveur (404).")
+                            MsgBox("L'exécutable de mise à jour n'a pas pu être trouvé sur GitHub (404).`nAssurez-vous d'avoir publié la release v" VersionInternet " avec le fichier 'AutoTravelerDofus [ATD].exe' en pièce jointe sur GitHub.", "Erreur de mise à jour", 16)
+                            return
+                        }
                         newExe := A_Temp "\AutoTravelerDofus_update.exe"
                         Download(LienExe, newExe)
                         batPath := A_Temp "\atd_updater.bat"
