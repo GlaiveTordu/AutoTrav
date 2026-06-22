@@ -4,7 +4,7 @@ SendMode "Input"
 SetTitleMatchMode 2
 
 ; ==================== CONFIGURATION ====================
-VersionActuelle := "1.0.1"
+VersionActuelle := "1.0.2"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
 LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/version.txt"
 LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTravelerDofus%20%5BATD%5D.exe"
@@ -12,6 +12,13 @@ ConfigDir := A_ScriptDir "\ATDconfig"
 if (!DirExist(ConfigDir))
     DirCreate(ConfigDir)
 ConfigFile := ConfigDir "\config_swapper.ini"
+OldConfigFile := A_ScriptDir "\config_swapper.ini"
+if (!FileExist(ConfigFile) && FileExist(OldConfigFile)) {
+    try {
+        FileCopy(OldConfigFile, ConfigFile)
+        FileDelete(OldConfigFile)
+    }
+}
 ; =======================================================
 
 SetMenuTheme("ForceDark")
@@ -254,7 +261,13 @@ ActualiserProcessDofus(DemanderBinds := false) {
     savedOrderStr := ""
     try savedOrderStr := IniRead(ConfigFile, "Config", "CycleOrder")
     if (savedOrderStr != "") {
-        savedOrderArr := StrSplit(savedOrderStr, ",")
+        ; Migrer l'ancien format de CycleOrder (ex: "Pseudo - Classe" -> "Pseudo")
+        cleanOrderArr := []
+        Loop Parse, savedOrderStr, "," {
+            cleanName := RegExReplace(A_LoopField, "\s+-\s+[A-Za-zÀ-ÿ]+$", "")
+            cleanOrderArr.Push(cleanName)
+        }
+        savedOrderArr := cleanOrderArr
         orderedList := []
         
         ; Ajouter en premier les fenêtres correspondant à l'ordre sauvegardé
@@ -282,7 +295,27 @@ ActualiserProcessDofus(DemanderBinds := false) {
         DofusWindows.Push({hwnd: hwnd, name: pseudo})
         ListePseudos.Push(pseudo)
         
-        bindKey := CustomKeys.Has(pseudo) ? CustomKeys[pseudo] : IniRead(ConfigFile, "Binds", pseudo, "")
+        bindKey := ""
+        if CustomKeys.Has(pseudo) {
+            bindKey := CustomKeys[pseudo]
+        } else {
+            bindKey := IniRead(ConfigFile, "Binds", pseudo, "")
+        }
+        
+        if (bindKey == "") {
+            ; Tenter de migrer d'anciennes clés (ex: "Pseudo - Classe" -> "Pseudo")
+            for key, val in CustomKeys {
+                if (RegExMatch(key, "^([^\-]+(?:-[^\-]+)*)\s+-\s+[A-Za-zÀ-ÿ]+$") && StrSplit(key, " - ")[1] == pseudo) {
+                    bindKey := val
+                    IniWrite(bindKey, ConfigFile, "Binds", pseudo)
+                    try IniDelete(ConfigFile, "Binds", key)
+                    CustomKeys[pseudo] := bindKey
+                    CustomKeys.Delete(key)
+                    LogMessage("Raccourci migré pour " pseudo " (ancienne clé : " key ")")
+                    break
+                }
+            }
+        }
         
         if (bindKey == "" || DemanderBinds) {
             IB := InputBox("Entrez la touche de raccourci pour : " pseudo, "Binds", "w300 h130", bindKey == "" ? "F1" : bindKey)
