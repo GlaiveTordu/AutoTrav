@@ -4,7 +4,7 @@ SendMode "Input"
 SetTitleMatchMode 2
 
 ; ==================== CONFIGURATION ====================
-VersionActuelle := "1.0.0"
+VersionActuelle := "1.0.1"
 LienMaj := "https://gist.githubusercontent.com/GlaiveTordu/d9f5e8f15fd6e34626bc7ad91ae23eca/raw/script.ahk"
 LienVersion := "https://raw.githubusercontent.com/GlaiveTordu/AutoTrav/main/version.txt"
 LienExe := "https://github.com/GlaiveTordu/AutoTrav/releases/latest/download/AutoTravelerDofus%20%5BATD%5D.exe"
@@ -36,7 +36,6 @@ BtnMoveUp := ""
 BtnMoveDown := ""
 TravelAllCheckbox := ""
 BtnInviteGroup := ""
-BtnTradeGroup := ""
 ImgPause := ""
 
 ; Chargement des configurations
@@ -116,9 +115,7 @@ ChoicePerso := ControlGui.Add("DDL", "x450 y160 w255 Background1E1C1A vChoicePer
 
 ControlGui.SetFont("s8.5 cE5C180 Bold", "Segoe UI")
 ControlGui.Add("Picture", "x455 y195 w18 h18 +Disabled +BackgroundTrans", GetIconPath("invite.png"))
-BtnInviteGroup := ControlGui.Add("Text", "x450 y192 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnInviteGroup", "       Inviter Groupe")
-ControlGui.Add("Picture", "x590 y195 w18 h18 +Disabled +BackgroundTrans", GetIconPath("trade.png"))
-BtnTradeGroup := ControlGui.Add("Text", "x585 y192 w120 h24 Left +0x0200 Background2D2A26 +Border vBtnTradeGroup", "       Échange Général")
+BtnInviteGroup := ControlGui.Add("Text", "x450 y192 w255 h24 Left +0x0200 Background2D2A26 +Border vBtnInviteGroup", "       Inviter Groupe")
 
 ControlGui.SetFont("s8.5 cFFFFFF Norm", "Segoe UI")
 TravelAllCheckbox := ControlGui.Add("Checkbox", "x450 y229 w250 h18 vTravelAllCheckbox", "Envoyer à toute l'équipe")
@@ -160,7 +157,6 @@ BtnMoveUp.OnEvent("Click", (*) => DeplacerCompte("up"))
 BtnMoveDown.OnEvent("Click", (*) => DeplacerCompte("down"))
 TravelAllCheckbox.OnEvent("Click", ToggleTravelAll)
 BtnInviteGroup.OnEvent("Click", InviterGroupe)
-BtnTradeGroup.OnEvent("Click", LancerEchangeGeneral)
 ShowLogCheckbox.OnEvent("Click", ToggleLog)
 StatusText.OnEvent("Click", TogglePause)
 BtnPauseToggle.OnEvent("Click", TogglePause)
@@ -248,10 +244,8 @@ ActualiserProcessDofus(DemanderBinds := false) {
     tempList := []
     for hwnd in WinList {
         title := WinGetTitle(hwnd)
-        ; Extraire seulement PSEUDO - CLASSE (retirer version, "Release", etc.)
-        pseudo := RegExReplace(title, "\s*-\s*\d[^-]*-\s*Release.*$", "")
-        pseudo := RegExReplace(pseudo, "\s*-\s*Dofus.*", "")
-        if (pseudo != "" && !InStr(pseudo, "Dofus Updater")) {
+        if RegExMatch(title, "^([^\-]+(?:-[^\-]+)*)\s+-\s+([A-Za-zÀ-ÿ]+)\s+-\s+\d[\d\.]+\s+-\s+Release", &Match) {
+            pseudo := Match[1]
             tempList.Push({hwnd: hwnd, name: pseudo})
         }
     }
@@ -579,10 +573,10 @@ QuitterScript(*) {
 }
 
 WM_SETCURSOR(wParam, lParam, msg, hwnd) {
-    global BtnRefresh, BtnSetCycle, BtnPauseToggle, BtnMaj, BtnMoveUp, BtnMoveDown, BtnInviteGroup, BtnTradeGroup
+    global BtnRefresh, BtnSetCycle, BtnPauseToggle, BtnMaj, BtnMoveUp, BtnMoveDown, BtnInviteGroup
     try {
         if (hwnd == BtnRefresh.Hwnd || hwnd == BtnSetCycle.Hwnd || hwnd == BtnPauseToggle.Hwnd || hwnd == BtnMaj.Hwnd 
-            || hwnd == BtnMoveUp.Hwnd || hwnd == BtnMoveDown.Hwnd || hwnd == BtnInviteGroup.Hwnd || hwnd == BtnTradeGroup.Hwnd) {
+            || hwnd == BtnMoveUp.Hwnd || hwnd == BtnMoveDown.Hwnd || hwnd == BtnInviteGroup.Hwnd) {
             DllCall("SetCursor", "Ptr", DllCall("LoadCursor", "Ptr", 0, "Ptr", 32649, "Ptr"))
             return String(true)
         }
@@ -694,43 +688,6 @@ InviterGroupe(*) {
     }
 }
 
-LancerEchangeGeneral(*) {
-    global DofusWindows
-    if (DofusWindows.Length < 2) {
-        LogMessage("Pas assez de comptes détectés pour lancer un échange.")
-        return
-    }
-    
-    chefName := DofusWindows[1].name
-    LogMessage("Lancement des invitations d'échange vers " chefName "...")
-    
-    for idx, win in DofusWindows {
-        if (idx == 1)
-            continue
-        
-        if WinExist(win.hwnd) {
-            WinActivate(win.hwnd)
-            if WinWaitActive(win.hwnd, , 3) {
-                Sleep 200
-                cmd := "/exchange " chefName
-                A_Clipboard := cmd
-                Sleep 50
-                
-                Send "{Enter down}"
-                Sleep Random(25, 45)
-                Send "{Enter up}"
-                Sleep Random(100, 150)
-                Send "^v"
-                Sleep Random(100, 150)
-                Send "{Enter down}"
-                Sleep Random(25, 45)
-                Send "{Enter up}"
-                Sleep Random(300, 500)
-            }
-        }
-    }
-    LogMessage("Demandes d'échanges envoyées vers " chefName " !")
-}
 
 WriteHexToFile(hex, filepath) {
     len := StrLen(hex) // 2
@@ -802,8 +759,6 @@ RecreerIcones() {
         WriteHexToFile(cycleHex, GetIconPath("cycle.png"))
     if (!FileExist(GetIconPath("invite.png")))
         WriteHexToFile(inviteHex, GetIconPath("invite.png"))
-    if (!FileExist(GetIconPath("trade.png")))
-        WriteHexToFile(tradeHex, GetIconPath("trade.png"))
     if (!FileExist(GetIconPath("pause.png")))
         WriteHexToFile(pauseHex, GetIconPath("pause.png"))
     if (!FileExist(GetIconPath("play.png")))
